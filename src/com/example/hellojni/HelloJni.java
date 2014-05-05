@@ -171,10 +171,9 @@ public class HelloJni extends Activity{
 	    		int canid = 0x123;
 	    		//int len = str.length();
 	 			
-				int ret = SendCan(canid, str);
+				int ret = SendCan(canid, str, 1);
 				Log.e("#####@@@@@@#####write ret="+ret, TAG);
 	    	}
-		    	
 		};
 	
 	//读书据，参数为要求读数据的长度，以及读取数据的超时设置，超时意义与写相似
@@ -199,7 +198,7 @@ public class HelloJni extends Activity{
 	OnClickListener closelisten = new OnClickListener(){
 	    	public void onClick(View arg0) {
 	    	//	tcflush(TCIOFLUSH);
-	    		close();
+	    		close(0);
 	    	}
 		    	
 		};
@@ -227,7 +226,7 @@ public class HelloJni extends Activity{
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
-						String candate = ReadCan();
+						String candate = ReadCan(1);
 							Log.e(TAG, "candate:"+candate);
 					}
 				}).start();
@@ -317,8 +316,8 @@ public class HelloJni extends Activity{
 				//关闭设备
 				OnClickListener closelisten1 = new OnClickListener(){
 				    	public void onClick(View arg0) {
-				    		tcflush(TCIOFLUSH);
-				    		close();
+				    		//tcflush(TCIOFLUSH);
+				    		close(1);
 				    	}
 					    	
 					};
@@ -330,7 +329,7 @@ public class HelloJni extends Activity{
 					    		//int len = str.length();
 					 			
 								
-								int ret = SendCan(canid, str);
+								int ret = SendCan(canid, str, 0);
 								Log.e("#####@@@@@@#####write ret="+ret, TAG);
 					    	}
 						    	
@@ -342,7 +341,7 @@ public class HelloJni extends Activity{
 									@Override
 									public void run() {
 										// TODO Auto-generated method stub
-										String candate = ReadCan();
+										String candate = ReadCan(0);
 											Log.e(TAG, "candate:"+candate);
 									}
 								}).start();
@@ -359,7 +358,7 @@ public class HelloJni extends Activity{
     
 	private native static FileDescriptor open(String path, int baudrate);
 	private native static FileDescriptor opendev(String path);
-	public native void close();
+	public native void close(int m);
 	public native int read(int num, int timeout);//timeout is ms
 	public native int write(byte[] str, int num, int timeout);//timeout is ms
 	public native  void tcflush(int type);//clean tty
@@ -367,8 +366,8 @@ public class HelloJni extends Activity{
 	public native int Ds28eRomRead(int RomCMD);
 	public native int ReadIccard(int addr, int count);
 	public native void readRfidTag(int timeout);
-	public native String ReadCan();
-	public native int SendCan(int canid, String str);
+	public native String ReadCan(int m);
+	public native int SendCan(int canid, String str, int m);
 	
 	 static {
 		 	//sel433-jni是使用433功能和DB9串口调用的库函数

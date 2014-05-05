@@ -51,7 +51,7 @@ struct sockaddr_can addr;
 static int openfd = -1;
 
 static int close_can1 = 0;
-struct sockaddr_can1 addr;
+struct sockaddr_can addr1;
 static int openfd1 = -1;
 
 #include <android/log.h>
@@ -71,24 +71,43 @@ Java_com_example_hellojni_HelloJni_opendev
       		/* Opening device */
         	const char *path_utf = (char *)(*env)->GetStringUTFChars(env, path, &iscopy);
          	LOGI("Opening dev path %s", path_utf);
+        if(strcmp(path_utf,"can0")==0){
+			openfd = socket(PF_CAN,SOCK_RAW,CAN_RAW);
+			if (openfd < 0 )
+				{
+						 /* Throw an exception */
+						LOGE("Cannot open dev");
+						/* TODO: throw an exception */
+						return OPEN_DEV_ERROR;
+				}
 
-		openfd = socket(PF_CAN,SOCK_RAW,CAN_RAW);
-		if (openfd < 0 )
-        	{
-            		 /* Throw an exception */
-             		LOGE("Cannot open dev");
-            		/* TODO: throw an exception */
-            		return OPEN_DEV_ERROR;
-         	}
-		
-		strcpy((char *)(ifr.ifr_name),path_utf);
-		ioctl(openfd, SIOCGIFINDEX,&ifr);
-		LOGE("#####can_ifindex = %x\n",ifr.ifr_ifindex);
+			strcpy((char *)(ifr.ifr_name),path_utf);
+			ioctl(openfd, SIOCGIFINDEX,&ifr);
+			LOGE("#####can_ifindex = %x\n",ifr.ifr_ifindex);
 
-		addr.can_family = AF_CAN;
-		addr.can_ifindex = ifr.ifr_ifindex;
-		bind(openfd, (struct sockaddr*)&addr, sizeof(addr));
-        	 (*env)->ReleaseStringUTFChars(env, path, path_utf);
+			addr.can_family = AF_CAN;
+			addr.can_ifindex = ifr.ifr_ifindex;
+			bind(openfd, (struct sockaddr*)&addr, sizeof(addr));
+				 (*env)->ReleaseStringUTFChars(env, path, path_utf);
+        }else{
+			openfd1 = socket(PF_CAN,SOCK_RAW,CAN_RAW);
+			if (openfd1 < 0 )
+				{
+						 /* Throw an exception */
+						LOGE("Cannot open dev");
+						/* TODO: throw an exception */
+						return OPEN_DEV_ERROR;
+				}
+
+			strcpy((char *)(ifr.ifr_name),path_utf);
+			ioctl(openfd1, SIOCGIFINDEX,&ifr);
+			LOGE("#####can_ifindex = %x\n",ifr.ifr_ifindex);
+
+			addr1.can_family = AF_CAN;
+			addr1.can_ifindex = ifr.ifr_ifindex;
+			bind(openfd1, (struct sockaddr*)&addr1, sizeof(addr1));
+				 (*env)->ReleaseStringUTFChars(env, path, path_utf);
+        }
         	
        	 /* Create a corresponding file descriptor */
              jclass cFileDescriptor = (*env)->FindClass(env, "java/io/FileDescriptor");
@@ -102,11 +121,17 @@ Java_com_example_hellojni_HelloJni_opendev
 
  void
 Java_com_example_hellojni_HelloJni_close
-   (JNIEnv* env, jobject thiz) {
+   (JNIEnv* env, jobject thiz, jint m) {
    		unsigned i;
+   		jfieldID mFdID;
        	jclass SerialPortClass = (*env)->GetObjectClass(env, thiz);
       		jclass FileDescriptorClass = (*env)->FindClass(env, "java/io/FileDescriptor");
-      		jfieldID mFdID = (*env)->GetFieldID(env, SerialPortClass, "mFd", "Ljava/io/FileDescriptor;");
+      		if(m==0){
+      		 mFdID = (*env)->GetFieldID(env, SerialPortClass, "mFd", "Ljava/io/FileDescriptor;");
+      		}else{
+      		 mFdID = (*env)->GetFieldID(env, SerialPortClass, "mFd1", "Ljava/io/FileDescriptor;");
+      		}
+
        	jfieldID descriptorID = (*env)->GetFieldID(env, FileDescriptorClass, "descriptor", "I");
      		jobject mFd = (*env)->GetObjectField(env, thiz, mFdID);
        	jint descriptor = (*env)->GetIntField(env, mFd, descriptorID);
@@ -116,7 +141,7 @@ Java_com_example_hellojni_HelloJni_close
  }
 
 jobject
-Java_com_example_hellojni_HelloJni_ReadCan(JNIEnv* env, jobject thiz){
+Java_com_example_hellojni_HelloJni_ReadCan(JNIEnv* env, jobject thiz, jint m){
 	char buf[1024] = {0};
 	int i,  ret, s, len;
 	unsigned long nbytes;
@@ -129,7 +154,7 @@ Java_com_example_hellojni_HelloJni_ReadCan(JNIEnv* env, jobject thiz){
 		LOGE("can not open can dev");
 		return NO_DEVICE_OPEN;
 	}
-	
+	if(m==0){
 	nbytes = recvfrom(openfd,&frame,sizeof(struct can_frame),0,(struct sockaddr *)&addr,&len);
 	////for debug
 	ifr.ifr_ifindex = addr.can_ifindex;
@@ -140,13 +165,24 @@ Java_com_example_hellojni_HelloJni_ReadCan(JNIEnv* env, jobject thiz){
 		"--can_dlc = %x\n"
 		"--data = %s\n",frame.can_id,frame.can_dlc,frame.data);
 	////////////////////
+	}else{
+		nbytes = recvfrom(openfd1,&frame,sizeof(struct can_frame),0,(struct sockaddr *)&addr1,&len);
+		////for debug
+		ifr.ifr_ifindex = addr1.can_ifindex;
+		ioctl(s,SIOCGIFNAME,&ifr);
+		LOGE("Received a CAN frame from interface %s\n",ifr.ifr_name);
+		LOGE("frame message\n"
+			"--can_id = %x\n"
+			"--can_dlc = %x\n"
+			"--data = %s\n",frame.can_id,frame.can_dlc,frame.data);
+	}
 
 	return (*env)->NewStringUTF(env, frame.data);	//返回得到的数据
 }
 
 
 jobject
-Java_com_example_hellojni_HelloJni_SendCan(JNIEnv* env, jobject thiz, jint  canid, jstring value){
+Java_com_example_hellojni_HelloJni_SendCan(JNIEnv* env, jobject thiz, jint  canid, jstring value, jint m){
 	struct ifreq ifr;
 	struct can_frame frame;
 	jboolean iscopy;
@@ -161,8 +197,10 @@ Java_com_example_hellojni_HelloJni_SendCan(JNIEnv* env, jobject thiz, jint  cani
 	const char *can_date = (char *)(*env)->GetStringUTFChars(env, value, &iscopy);
 	strcpy((char *)frame.data,can_date);
 	frame.can_dlc = strlen(frame.data);
-
+	if(m==0)
 	nbytes = sendto(openfd,&frame,sizeof(struct can_frame),0,(struct sockaddr*)&addr,sizeof(addr));
+	else
+		nbytes = sendto(openfd1,&frame,sizeof(struct can_frame),0,(struct sockaddr*)&addr1,sizeof(addr1));
 
 	(*env)->ReleaseStringUTFChars(env, value, can_date);
 	return nbytes;//返回写入的字节数
