@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2009 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at    android:orientation="vertical" 
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/send"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="send" >
+        </Button>
+
+        <Button
+            android:id="@+id/open"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="open" >
+        </Button>
+
+        <Button
+            android:id="@+id/close"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="close" >
+        </Button>
+
+        <Button
+            android:id="@+id/read"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="read" >
+        </Button>
+
+        <Button
+            android:id="@+id/irscan"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="irscan" >
+        </Button>
+
+        <Button
+            android:id="@+id/readrom"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="readrom" >
+        </Button>
+
+        <Button
+            android:id="@+id/readiccard"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="readiccard" >
+        </Button>
+
+        <Button
+            android:id="@+id/readrfidtag"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="readrfidtag" >
+        </Button>
+
+        <Button
+            android:id="@+id/readcan"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="readcan" >
+        </Button>
+
+        <Button
+            android:id="@+id/sendcan"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="sendcan" >
+        </Button>
+    </LinearLayout>
+
+    <!-- 第二行 -->
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/open1"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="open1" >
+        </Button>
+
+        <Button
+            android:id="@+id/close1"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="close1" >
+        </Button>
+
+        <Button
+            android:id="@+id/readcan1"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="readcan1" >
+        </Button>
+
+        <Button
+            android:id="@+id/sendcan1"
+            android:layout_width="100dp"
+            android:layout_height="60dp"
+            android:text="sendcan1" >
+        </Button>
+    </LinearLayout>
+
+</LinearLayout>

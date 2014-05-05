@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    	<string name="app_name">mydemo</string>
+
+	 <string name="connect">连接</string>
+    	<string name="disconnect">断开连接</string>
+	<string name="cmd">命令</string>
+
+    	<string name="path_label">Path:</string>
+    	<string name="status_label">Status:</string>
+
+</resources>
