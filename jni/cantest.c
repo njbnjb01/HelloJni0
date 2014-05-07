@@ -88,8 +88,13 @@ Java_com_example_hellojni_HelloJni_opendev
 		addr.can_family = AF_CAN;
 		addr.can_ifindex = ifr.ifr_ifindex;
 		bind(openfd, (struct sockaddr*)&addr, sizeof(addr));
-        	 (*env)->ReleaseStringUTFChars(env, path, path_utf);
-        	
+		 (*env)->ReleaseStringUTFChars(env, path, path_utf);
+
+		 int loopback = 1; // 0表示关闭, 1表示开启(默认)
+		 setsockopt(openfd, SOL_CAN_RAW, CAN_RAW_LOOPBACK, &loopback, sizeof(loopback));
+		 int ro = 1; // 0表示关闭(默认), 1表示开启
+		 setsockopt(openfd, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &ro, sizeof(ro));
+
        	 /* Create a corresponding file descriptor */
              jclass cFileDescriptor = (*env)->FindClass(env, "java/io/FileDescriptor");
              jmethodID iFileDescriptor = (*env)->GetMethodID(env, cFileDescriptor, "<init>", "()V");
