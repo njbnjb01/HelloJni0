@@ -41,10 +41,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import java.io.BufferedReader;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 
@@ -141,10 +143,136 @@ public class HelloJni extends Activity{
         sendcan1 = (Button)findViewById(R.id.sendcan1);
         sendcan1.setOnClickListener(sendcanlisten1);
         
-        
+        //exec_cmd("/system/bin/su");
       //  flush = (Button)findViewById(R.id.);
        // flush.setOnClickListener(flushlisten);
     }
+    //打开设备
+	OnClickListener openlisten = new OnClickListener(){
+    	public void onClick(View arg0) {
+      	   	//mFd = open("/dev/ttymxc2", 19200);//此方法用来打开串口相关的设备，比如红外扫描，433，RFID，以及DB9
+      	   	//其中433是/dev/ttymxc2，RFID是/dev/ttymxc3，红外扫描是/dev/ttymxc4，DB9是/dev/ttymxc0
+    		//mFd = opendev("/dev/ds28e01");//打开DS28E01加密芯片
+    		//mFd = opendev("/dev/miccard");//打开iccard 
+      	   	mFd = opendev("can0");//打开can设备 
+      	    if (mFd == null) {
+      	    		Log.e(TAG, "native open returns null");
+      	    		return ;
+      	   	}
+      	   //	exec_cmd("ip link set can0 type can bitrate 125000");
+      	  // 	exec_cmd("ifconfig can0 up ");
+      	  //tcflush(TCIOFLUSH);
+    	}	    	
+  	};
+	//打开设备
+	OnClickListener openlisten1 = new OnClickListener(){
+	    	public void onClick(View arg0) {
+	      	   	//mFd = open("/dev/ttymxc2", 19200);//此方法用来打开串口相关的设备，比如红外扫描，433，RFID，以及DB9
+	      	   	//其中433是/dev/ttymxc2，RFID是/dev/ttymxc3，红外扫描是/dev/ttymxc4，DB9是/dev/ttymxc0
+	    		//mFd = opendev("/dev/ds28e01");//打开DS28E01加密芯片
+	    		//mFd = opendev("/dev/miccard");//打开iccard 
+	      	   	mFd1 = opendev("can1");//打开can设备 
+	      	    if (mFd1 == null) {
+	      	    		Log.e(TAG, "native open returns null");
+	      	    		return ;
+	      	   	}
+	      	   // exec_cmd("ip link set can1 type can bitrate 125000");
+	      	   	//exec_cmd("ifconfig can1 up ");
+	      	  //tcflush(TCIOFLUSH);
+	    	}
+		    	
+		};
+	//关闭设备
+	OnClickListener closelisten = new OnClickListener(){
+	    	public void onClick(View arg0) {
+	    	//	tcflush(TCIOFLUSH);
+	    		close(0);
+	    		exec_cmd("ifconfig can0 down");
+	    	}
+		    	
+		};	
+	//关闭设备
+	OnClickListener closelisten1 = new OnClickListener(){
+	    	public void onClick(View arg0) {
+	    		//tcflush(TCIOFLUSH);
+	    		close(1);
+	    		exec_cmd("ifconfig can1 down");
+	    	}
+		    	
+		};
+		
+	 OnClickListener sendcanlisten = new OnClickListener(){
+	    	public void onClick(View arg0) {
+	    		String str = "hello";
+	    		int canid = 0x123;
+	    		//int len = str.length();
+	 			
+				int ret = SendCan(canid, str, 0);
+				Log.e("#####@@@@@@#####write ret="+ret, TAG);
+	    	}
+		};
+	 OnClickListener sendcanlisten1 = new OnClickListener(){
+	    	public void onClick(View arg0) {
+	    		String str = "hello";
+	    		int canid = 123;
+	    		//int len = str.length();
+	 			
+				
+				int ret = SendCan(canid, str, 1);
+				Log.e("#####@@@@@@#####write ret="+ret, TAG);
+	    	}
+		    	
+		};
+		
+	OnClickListener readcanlisten = new OnClickListener(){
+    	public void onClick(View arg0) {
+    		new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					String candate = ReadCan(0);
+						Log.e(TAG, "candate:"+candate);
+				}
+			}).start();
+    	}
+	    	
+	};	
+	OnClickListener readcanlisten1 = new OnClickListener(){
+    	public void onClick(View arg0) {
+    		new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					String candate = ReadCan(1);
+						Log.e(TAG, "candate:"+candate);
+				}
+			}).start();
+    	}
+	    	
+	};	
+
+	public void exec_cmd(String cmd){		
+		String con="";
+		String result="";
+		  try {
+			/* Missing read/write permission, trying to chmod the file */
+			Process p;
+			p = Runtime.getRuntime().exec(cmd);
+			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+			while((result=br.readLine())!=null){
+				con+=result;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SecurityException();
+		}
+		  Log.e("con: "+con, TAG);
+	}
+		
+    
+    
     
     //写数据，参数为要写的byte字节数据，要写的大小，以及超时设置。
     //对于超时参数，当为-1时，表示一直等到设备有数据到来，否则一直阻塞或者底层准备写失败
@@ -165,16 +293,7 @@ public class HelloJni extends Activity{
 	    	
 	};
 	
-	 OnClickListener sendcanlisten = new OnClickListener(){
-	    	public void onClick(View arg0) {
-	    		String str = "hello";
-	    		int canid = 0x123;
-	    		//int len = str.length();
-	 			
-				int ret = SendCan(canid, str, 1);
-				Log.e("#####@@@@@@#####write ret="+ret, TAG);
-	    	}
-		};
+
 	
 	//读书据，参数为要求读数据的长度，以及读取数据的超时设置，超时意义与写相似
 	 OnClickListener readlisten = new OnClickListener(){
@@ -193,15 +312,6 @@ public class HelloJni extends Activity{
 	    	}
 		    	
 		};
-	
-	//关闭设备
-	OnClickListener closelisten = new OnClickListener(){
-	    	public void onClick(View arg0) {
-	    	//	tcflush(TCIOFLUSH);
-	    		close(0);
-	    	}
-		    	
-		};
 		
 		//红外扫描数据，调用一次函数读取一次
 		OnClickListener irscanlisten = new OnClickListener(){
@@ -213,21 +323,6 @@ public class HelloJni extends Activity{
 						// TODO Auto-generated method stub
 							String scandate = readirscan(1000, 500000);
 							Log.e(TAG, "scandate:"+scandate);
-					}
-				}).start();
-	    	}
-		    	
-		};
-		
-		OnClickListener readcanlisten = new OnClickListener(){
-	    	public void onClick(View arg0) {
-	    		new Thread(new Runnable() {
-					
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						String candate = ReadCan(1);
-							Log.e(TAG, "candate:"+candate);
 					}
 				}).start();
 	    	}
@@ -281,73 +376,7 @@ public class HelloJni extends Activity{
 		    	
 		};
 		
-		//打开设备
-		OnClickListener openlisten = new OnClickListener(){
-		    	public void onClick(View arg0) {
-		      	   	//mFd = open("/dev/ttymxc2", 19200);//此方法用来打开串口相关的设备，比如红外扫描，433，RFID，以及DB9
-		      	   	//其中433是/dev/ttymxc2，RFID是/dev/ttymxc3，红外扫描是/dev/ttymxc4，DB9是/dev/ttymxc0
-		    		//mFd = opendev("/dev/ds28e01");//打开DS28E01加密芯片
-		    		//mFd = opendev("/dev/miccard");//打开iccard 
-		      	   	mFd = opendev("can0");//打开can设备 
-		      	    if (mFd == null) {
-		      	    		Log.e(TAG, "native open returns null");
-		      	    		return ;
-		      	   	}
-		      	  //tcflush(TCIOFLUSH);
-		    	}
-			    	
-			};
-			//打开设备
-			OnClickListener openlisten1 = new OnClickListener(){
-			    	public void onClick(View arg0) {
-			      	   	//mFd = open("/dev/ttymxc2", 19200);//此方法用来打开串口相关的设备，比如红外扫描，433，RFID，以及DB9
-			      	   	//其中433是/dev/ttymxc2，RFID是/dev/ttymxc3，红外扫描是/dev/ttymxc4，DB9是/dev/ttymxc0
-			    		//mFd = opendev("/dev/ds28e01");//打开DS28E01加密芯片
-			    		//mFd = opendev("/dev/miccard");//打开iccard 
-			      	   	mFd1 = opendev("can1");//打开can设备 
-			      	    if (mFd1 == null) {
-			      	    		Log.e(TAG, "native open returns null");
-			      	    		return ;
-			      	   	}
-			      	  //tcflush(TCIOFLUSH);
-			    	}
-				    	
-				};
-				//关闭设备
-				OnClickListener closelisten1 = new OnClickListener(){
-				    	public void onClick(View arg0) {
-				    		//tcflush(TCIOFLUSH);
-				    		close(1);
-				    	}
-					    	
-					};
-					
-					 OnClickListener sendcanlisten1 = new OnClickListener(){
-					    	public void onClick(View arg0) {
-					    		String str = "hello";
-					    		int canid = 123;
-					    		//int len = str.length();
-					 			
-								
-								int ret = SendCan(canid, str, 0);
-								Log.e("#####@@@@@@#####write ret="+ret, TAG);
-					    	}
-						    	
-						};
-						OnClickListener readcanlisten1 = new OnClickListener(){
-					    	public void onClick(View arg0) {
-					    		new Thread(new Runnable() {
-									
-									@Override
-									public void run() {
-										// TODO Auto-generated method stub
-										String candate = ReadCan(0);
-											Log.e(TAG, "candate:"+candate);
-									}
-								}).start();
-					    	}
-						    	
-						};	
+		
 					
     private String TAG = "mytest";
     private FileDescriptor mFd;
