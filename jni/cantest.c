@@ -51,7 +51,7 @@ struct sockaddr_can addr;
 static int openfd = -1;
 
 static int close_can1 = 0;
-struct sockaddr_can1 addr;
+struct sockaddr_can addr1;
 static int openfd1 = -1;
 
 #include <android/log.h>
