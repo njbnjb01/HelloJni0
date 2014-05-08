@@ -89,8 +89,7 @@ Java_com_example_hellojni_HelloJni_opendev
 			addr.can_ifindex = ifr.ifr_ifindex;
 			bind(openfd, (struct sockaddr*)&addr, sizeof(addr));
 				 (*env)->ReleaseStringUTFChars(env, path, path_utf);
-			 system("/system/bin/ip link set can0 type can bitrate 125000");
-			 system("/system/bin/ifconfig can0 up");
+
         }else{
 			openfd1 = socket(PF_CAN,SOCK_RAW,CAN_RAW);
 			if (openfd1 < 0 )
@@ -109,8 +108,7 @@ Java_com_example_hellojni_HelloJni_opendev
 			addr1.can_ifindex = ifr.ifr_ifindex;
 			bind(openfd1, (struct sockaddr*)&addr1, sizeof(addr1));
 				 (*env)->ReleaseStringUTFChars(env, path, path_utf);
-			system("/system/bin/ip link set can1 type can bitrate 125000");
-			system("/system/bin/ifconfig can1 up");
+
         }
         	
        	 /* Create a corresponding file descriptor */

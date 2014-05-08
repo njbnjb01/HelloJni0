@@ -42,11 +42,15 @@ import android.os.Looper;
 import android.os.Message;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 
@@ -143,7 +147,7 @@ public class HelloJni extends Activity{
         sendcan1 = (Button)findViewById(R.id.sendcan1);
         sendcan1.setOnClickListener(sendcanlisten1);
         
-        //exec_cmd("/system/bin/su");
+//        exec_cmd("/system/xbin/su");
       //  flush = (Button)findViewById(R.id.);
        // flush.setOnClickListener(flushlisten);
     }
@@ -159,8 +163,8 @@ public class HelloJni extends Activity{
       	    		Log.e(TAG, "native open returns null");
       	    		return ;
       	   	}
-      	   //	exec_cmd("ip link set can0 type can bitrate 125000");
-      	  // 	exec_cmd("ifconfig can0 up ");
+      	   exec_cmd("ip link set can0 type can bitrate 125000\n");
+      	   exec_cmd("ifconfig can0 up\n");
       	  //tcflush(TCIOFLUSH);
     	}	    	
   	};
@@ -176,8 +180,8 @@ public class HelloJni extends Activity{
 	      	    		Log.e(TAG, "native open returns null");
 	      	    		return ;
 	      	   	}
-	      	   // exec_cmd("ip link set can1 type can bitrate 125000");
-	      	   	//exec_cmd("ifconfig can1 up ");
+	      	    exec_cmd("ip link set can1 type can bitrate 125000\n");
+	      	   	exec_cmd("ifconfig can1 up\n");
 	      	  //tcflush(TCIOFLUSH);
 	    	}
 		    	
@@ -187,7 +191,7 @@ public class HelloJni extends Activity{
 	    	public void onClick(View arg0) {
 	    	//	tcflush(TCIOFLUSH);
 	    		close(0);
-	    		exec_cmd("ifconfig can0 down");
+	    		exec_cmd("ifconfig can0 down\n");
 	    	}
 		    	
 		};	
@@ -196,7 +200,7 @@ public class HelloJni extends Activity{
 	    	public void onClick(View arg0) {
 	    		//tcflush(TCIOFLUSH);
 	    		close(1);
-	    		exec_cmd("ifconfig can1 down");
+	    		exec_cmd("ifconfig can1 down\n");
 	    	}
 		    	
 		};
@@ -252,23 +256,88 @@ public class HelloJni extends Activity{
     	}
 	    	
 	};	
-
 	public void exec_cmd(String cmd){		
+		  try {
+			Process p;
+			p = Runtime.getRuntime().exec("su");
+			DataOutputStream os = new DataOutputStream(p.getOutputStream());
+			os.writeBytes(cmd);
+			os.writeBytes("exit\n");
+			os.flush();
+
+			Log.e("--shell--", TAG);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			//throw new SecurityException();
+		}
+		  
+	}
+	public void exec_cmd0(String cmd){		
 		String con="";
 		String result="";
 		  try {
 			/* Missing read/write permission, trying to chmod the file */
 			Process p;
+			p = Runtime.getRuntime().exec("/system/xbin/su");
 			p = Runtime.getRuntime().exec(cmd);
 			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while((result=br.readLine())!=null){
 				con+=result;
 			}
+			Log.e("con: "+con, TAG);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SecurityException();
 		}
-		  Log.e("con: "+con, TAG);
+		  
+	}
+	public void exec_cmd1(String cmd){		
+		String con="";
+		String result="";
+		  try {
+			/* Missing read/write permission, trying to chmod the file */
+			Process p;
+			p = Runtime.getRuntime().exec("/system/xbin/su");
+			//p = Runtime.getRuntime().exec("/system/xbin/sh",null,new File("/system/xbin"));
+//			BufferedReader br=new BufferedReader(new InputStreamReader(p.getInputStream()));
+//			while((result=br.readLine())!=null){
+//				con+=result;
+//			}
+//			Log.e("con: "+con, TAG);
+			if(p!=null){
+				BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));  
+		        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(p.getOutputStream())), true);  
+//		        out.println("cd /data/data/com.vatata.atest.commandexecute");  
+//		        out.println("pwd");  
+//	            out.println("pwd");  
+//		        out.println("pwd");  
+//	            out.println("cd /");  
+//		        out.println("ls -l");  
+//		        out.println("exit");  
+	            out.println(cmd); 
+	            out.println("exit");
+	            try {  
+	                String line;  
+	                while ((line = in.readLine()) != null) {  
+	                    System.out.println(line);  
+	                    Log.d("command", line);  
+	                }  
+	               // proc.waitFor(); //上面读这个流食阻塞的，所以waitfor 没太大必要性  
+	                in.close();  
+	                out.close();  
+	                p.destroy();  
+	            } catch (Exception e) {  
+	               e.printStackTrace();  
+	            }  
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SecurityException();
+		}
+		  
 	}
 		
     
